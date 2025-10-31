@@ -40,7 +40,7 @@ namespace FilmSpot.Models.Users
                         break;
 
                     case 4:
-                        VerTodasLasLocaciones(data);
+                        ListAllLocations(data);
                         break;
                 }
 
@@ -128,7 +128,7 @@ namespace FilmSpot.Models.Users
                 movie.ShowInfo();
         }
 
-        private void VerTodasLasLocaciones(AppData data)
+        private void ListAllLocations(AppData data)
         {
             if (data.AllLocations.Count == 0)
             {
