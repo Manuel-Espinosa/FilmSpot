@@ -391,96 +391,100 @@ public Location GetOrCreateLocation(string name, string city, string country)
 
 ```mermaid
 flowchart TD
-    A[Program.Main()] --> B[Crear instancia de AppData]
-    B --> C[Mostrar menú principal]
-    C --> D[Capturar opción del usuario]
-
+    start["Program.Main()"] --> app["Crear instancia de AppData"]
+    app --> menu["Mostrar menú principal"]
+    menu --> opc["Capturar opción del usuario"]
 ```
 
 ### 2. Flujo de Administrador
 
 ```mermaid
 flowchart TD
-    A[Seleccionar opción 1] --> B[Ingresar nombre]
-    B --> C[Crear instancia Admin]
-    C --> D[[Admin.ShowMenu()]]
-    D --> E1[Agregar película]
-    D --> E2[Agregar locación]
-    D --> E3[Ver películas]
-    E2 --> F1[Seleccionar película]
-    F1 --> F2[Usar existente o crear nueva]
-    F2 --> G[AppData.GetOrCreateLocation()]
-    D --> H[Cerrar sesión]
+    a["Seleccionar opción 1"] --> b["Ingresar nombre"]
+    b --> c["Crear instancia Admin"]
+    c --> d["Admin.ShowMenu()"]
+
+    d --> addMovie["Agregar película"]
+    d --> addLocation["Agregar locación"]
+    d --> viewMovies["Ver películas"]
+    d --> logoutA["Cerrar sesión"]
+
+    addLocation --> selectMovie["Seleccionar película"]
+    selectMovie --> useOrCreate["Usar existente o crear nueva"]
+    useOrCreate --> getOrCreate["AppData.GetOrCreateLocation()"]
+
 ```
 
 ### 3. Flujo de Usuario Regular
 
 ```mermaid
 flowchart TD
-    A[Seleccionar opción 2] --> B[Ingresar nombre]
-    B --> C[Crear instancia RegularUser]
-    C --> D[[RegularUser.ShowMenu()]]
-    D --> E1[Buscar película (LINQ)]
-    D --> E2[Buscar locación (LINQ)]
-    E2 --> F[Mostrar películas en esa locación]
-    D --> G[Ver todas las películas]
-    D --> H[Ver todas las locaciones]
-    D --> I[Cerrar sesión]
+    a["Seleccionar opción 2"] --> b["Ingresar nombre"]
+    b --> c["Crear instancia RegularUser"]
+    c --> d["RegularUser.ShowMenu()"]
+
+    d --> findMovie["Buscar película (LINQ)"]
+    d --> findLocation["Buscar locación (LINQ)"]
+    findLocation --> showMoviesAtLocation["Mostrar películas en esa locación"]
+    d --> viewAllMovies["Ver todas las películas"]
+    d --> viewAllLocations["Ver todas las locaciones"]
+    d --> logoutR["Cerrar sesión"]
+
 ```
 
 ---
 
 ## Diagrama de Clases
 
-```plantuml
-@startuml
-title Diagrama de Clases - FilmSpot
+```mermaid
+classDiagram
+    title Diagrama de Clases - FilmSpot
 
-' ====== CLASES PRINCIPALES ======
-class AppData {
-  - List<Movie> Movies
-  - List<Location> AllLocations
-  + GetOrCreateLocation(name, city, country) : Location
-}
+    %% ====== CLASES PRINCIPALES ======
+    class AppData {
+        - List~Movie~ Movies
+        - List~Location~ AllLocations
+        + GetOrCreateLocation(name, city, country) Location
+    }
 
-class Movie {
-  - string Title
-  - int Year
-  - List<Location> Locations
-  + AddLocation(location : Location)
-  + ShowInfo()
-}
+    class Movie {
+        - string Title
+        - int Year
+        - List~Location~ Locations
+        + AddLocation(location Location)
+        + ShowInfo()
+    }
 
-class Location {
-  - string Name
-  - string City
-  - string Country
-  + ShowInfo()
-}
+    class Location {
+        - string Name
+        - string City
+        - string Country
+        + ShowInfo()
+    }
 
-' ====== CLASES DE USUARIO ======
-abstract class User {
-  - string Name
-  - bool IsAdmin
-  + ShowMenu(data : AppData)
-}
+    %% ====== CLASES DE USUARIO ======
+    class User {
+        <<abstract>>
+        - string Name
+        - bool IsAdmin
+        + ShowMenu(data AppData)
+    }
 
-class Admin {
-  + ShowMenu(data : AppData)
-}
+    class Admin {
+        + ShowMenu(data AppData)
+    }
 
-class RegularUser {
-  + ShowMenu(data : AppData)
-}
+    class RegularUser {
+        + ShowMenu(data AppData)
+    }
 
-' ====== RELACIONES ======
-AppData "1" --> "*" Movie : contiene >
-AppData "1" --> "*" Location : contiene >
-Movie "1" --> "*" Location : usa >
-User <|-- Admin
-User <|-- RegularUser
+    %% ====== RELACIONES ======
+    AppData "1" --> "*" Movie : contiene >
+    AppData "1" --> "*" Location : contiene >
+    Movie "1" --> "*" Location : usa >
+    User <|-- Admin
+    User <|-- RegularUser
 
-@enduml
 ```
 
 ### Relaciones
