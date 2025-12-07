@@ -10,17 +10,14 @@ namespace FilmSpot.Models
         public string Country { get; private set; }
         public int? Id { get; private set; }
         public int CreatedById { get; private set; }
-        public int MovieId { get; private set; }
 
-
-        public Location(string description, string streetAddress, string city, string country, int createdById, int movieId, int? id = null)
+        public Location(string description, string streetAddress, string city, string country, int createdById, int? id = null)
         {
             Description = description;
             StreetAddress = streetAddress;
             City = city;
             Country = country;
             CreatedById = createdById;
-            MovieId = movieId;
             Id = id;
         }
 

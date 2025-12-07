@@ -22,8 +22,16 @@ CREATE TABLE IF NOT EXISTS Location (
     city TEXT NOT NULL,
     country TEXT NOT NULL,
     createdById INTEGER NOT NULL,
-    movieId INTEGER NOT NULL,
-    FOREIGN KEY (movieId) REFERENCES Movie(id),
-    FOREIGN KEY (createdById) REFERENCES User(id)
+    FOREIGN KEY (createdById) REFERENCES User(id),
+    UNIQUE(description, streetAddress, city, country)
+);
 
+CREATE TABLE IF NOT EXISTS MovieLocation (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    movieId INTEGER NOT NULL,
+    locationId INTEGER NOT NULL,
+    addedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (movieId) REFERENCES Movie(id) ON DELETE CASCADE,
+    FOREIGN KEY (locationId) REFERENCES Location(id) ON DELETE CASCADE,
+    UNIQUE(movieId, locationId)
 );

@@ -45,7 +45,7 @@ namespace FilmSpot.Services
                         if (includeLocations)
                         {
                             LocationService locationService = new LocationService(connection);
-                            var locations = locationService.GetAllLocations(id);
+                            var locations = locationService.GetLocationsForMovie(id);
                             movies.Add(new Movie(id, title, year, createdById, locations.ToList()));
                         }
                         else
@@ -97,7 +97,7 @@ namespace FilmSpot.Services
 
                         // Fetch locations for this movie
                         LocationService locationService = new LocationService(connection);
-                        var locations = locationService.GetAllLocations(id);
+                        var locations = locationService.GetLocationsForMovie(id);
 
                         movies.Add(new Movie(id, movieTitle, year, createdById, locations.ToList()));
                     }
@@ -114,7 +114,8 @@ namespace FilmSpot.Services
                 command.CommandText = @"
                 SELECT DISTINCT m.id, m.title, m.year, m.createdById
                 FROM Movie m
-                JOIN Location l ON m.id = l.movieId
+                JOIN MovieLocation ml ON m.id = ml.movieId
+                JOIN Location l ON ml.locationId = l.id
                 WHERE l.city LIKE @City;";
                 command.Parameters.AddWithValue("@City", $"%{cityName}%");
 
