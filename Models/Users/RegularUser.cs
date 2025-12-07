@@ -6,7 +6,7 @@ namespace FilmSpot.Models.Users
 {
     public class RegularUser : User
     {
-        public RegularUser(string name) : base(name)
+        public RegularUser(int? id, string name) : base(id, name)
         {
             IsAdmin = false;
         }
