@@ -8,7 +8,7 @@ namespace FilmSpot.Data
     {
         private readonly string _dataSource;
 
-        public Db(string databaseFile = "filmspot.db")
+        public Db(string databaseFile = "filmSpot.db")
         {
             _dataSource = $"Data Source={databaseFile}";
         }
@@ -17,16 +17,21 @@ namespace FilmSpot.Data
             string sql = File.ReadAllText("./setup.sql");
             if (!File.Exists(_dataSource))
             {
-                using (var connection = new SqliteConnection(_dataSource))
+
+                using (var connection = GetConnection())
                 {
-                    connection.Open();
                     var command = connection.CreateCommand();
                     command.CommandText = sql;
                     command.ExecuteNonQuery();
                     Console.WriteLine("Base de datos generada correctamente.");
                 }
             }
-
+        }
+        public SqliteConnection GetConnection()
+        {
+            SqliteConnection connection = new SqliteConnection(_dataSource);
+            connection.Open();
+            return connection;
         }
     }
 }
