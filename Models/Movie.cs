@@ -6,36 +6,28 @@ namespace FilmSpot.Models
 {
     public class Movie
     {
+
+        public int? Id { get; private set; }
+        public int CreatedById { get; private set; }
         public string Title { get; private set; }
         public int Year { get; private set; }
         public List<Location> Locations { get; private set; }
 
-        public Movie(string title, int year)
+        public Movie(int? id, string title, int year, int createdById = 0)
         {
+            Id = id;
             Title = title;
             Year = year;
             Locations = new List<Location>();
+            CreatedById = createdById;
         }
 
-        public void AddLocation(Location location)
-        {
-            bool exists = Locations.Any(l =>
-                l.Name.Equals(location.Name, StringComparison.OrdinalIgnoreCase) &&
-                l.City.Equals(location.City, StringComparison.OrdinalIgnoreCase) &&
-                l.Country.Equals(location.Country, StringComparison.OrdinalIgnoreCase));
 
-            if (exists)
-                Console.WriteLine("Esta locación ya está registrada para esta película.");
-            else
-            {
-                Locations.Add(location);
-                Console.WriteLine("Locación agregada correctamente.");
-            }
-        }
 
-        public void ShowInfo()
+        public void ShowInfo(bool showLocations = true)
         {
-            Console.WriteLine($"\n{Title} ({Year})");
+            Console.WriteLine($"\n{Id}. {Title} ({Year})");
+            if (!showLocations) return;
             if (Locations.Count == 0)
                 Console.WriteLine("  - No hay locaciones registradas.");
             else

@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using FilmSpot.Models;
+using Microsoft.Data.Sqlite;
+using FilmSpot.Services;
 
 namespace FilmSpot.Models.Users
 {
@@ -11,16 +13,17 @@ namespace FilmSpot.Models.Users
             IsAdmin = false;
         }
 
-        public override void ShowMenu(AppData data)
+        public override void ShowMenu(SqliteConnection connection)
         {
+            MovieService movieService = new MovieService(connection);
             int option;
             do
             {
                 Console.WriteLine($"\n=== Bienvenido {Name} ===");
                 Console.WriteLine("1. Buscar película");
-                Console.WriteLine("2. Buscar locación");
+                Console.WriteLine("2. Buscar peliculas por ciudad");
                 Console.WriteLine("3. Ver todas las películas");
-                Console.WriteLine("4. Ver todas las locaciones");
+                Console.WriteLine("4. Ver todas las ubicaciones");
                 Console.WriteLine("0. Cerrar sesión");
                 Console.Write("Opción: ");
                 option = int.Parse(Console.ReadLine() ?? "0");
@@ -28,117 +31,65 @@ namespace FilmSpot.Models.Users
                 switch (option)
                 {
                     case 1:
-                        SearchMovie(data);
+                        SearchMovie(movieService);
                         break;
 
                     case 2:
-                        SearchByLocation(data);
+                        SearchByLocation(movieService);
                         break;
 
                     case 3:
-                        ListAllMovies(data);
+                        ListAllMovies(movieService);
                         break;
 
                     case 4:
-                        ListAllLocations(data);
+                        ListAllLocations(movieService);
                         break;
                 }
 
             } while (option != 0);
         }
 
-        private void SearchMovie(AppData data)
+        private void SearchMovie(MovieService movieService)
         {
-            if (data.Movies.Count == 0)
-            {
-                Console.WriteLine("No hay películas registradas.");
-                return;
-            }
 
             Console.Write("Ingrese el título de la película: ");
             string title = Console.ReadLine()!;
 
-            var movie = data.Movies
-                .FirstOrDefault(m => m.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
+            var movies = movieService.SearchByTitle(title);
 
-            if (movie != null)
+            if (movies.Length == 0)
+            {
+                Console.WriteLine("No se encontró ninguna película con ese nombre.");
+                return;
+            }
+            foreach (var movie in movies)
             {
                 movie.ShowInfo();
             }
-            else
-            {
-                Console.WriteLine("No se encontró ninguna película con ese nombre.");
-            }
         }
 
-        private void SearchByLocation(AppData data)
+        private void SearchByLocation(MovieService movieService)
         {
-            if (data.AllLocations.Count == 0)
-            {
-                Console.WriteLine("No hay locaciones registradas aún.");
-                return;
-            }
-
-            Console.WriteLine("\nLocaciones disponibles:");
-            for (int i = 0; i < data.AllLocations.Count; i++)
-                Console.WriteLine($"{i + 1}. {data.AllLocations[i].Name} ({data.AllLocations[i].City}, {data.AllLocations[i].Country})");
-
-            Console.Write("Ingrese el nombre o ciudad de la locación: ");
-            string query = Console.ReadLine()!;
-
-            var matchedLocations = data.AllLocations
-                .Where(l =>
-                    l.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                    l.City.Contains(query, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            if (matchedLocations.Count == 0)
-            {
-                Console.WriteLine("No se encontró ninguna locación que coincida.");
-                return;
-            }
-
-            foreach (var loc in matchedLocations)
-            {
-                Console.WriteLine($"\n {loc.Name} ({loc.City}, {loc.Country})");
-                var moviesAtLoc = data.Movies
-                    .Where(m => m.Locations.Any(l => l == loc))
-                    .ToList();
-
-                if (moviesAtLoc.Count == 0)
-                    Console.WriteLine("No hay películas registradas en esta locación.");
-                else
-                {
-                    Console.WriteLine("Películas filmadas aquí:");
-                    foreach (var movie in moviesAtLoc)
-                        Console.WriteLine($"   - {movie.Title} ({movie.Year})");
-                }
-            }
+            throw new Exception("Not implemented yet");
         }
 
-        private void ListAllMovies(AppData data)
+        private void ListAllMovies(MovieService movieService)
         {
-            if (data.Movies.Count == 0)
+            var movies = movieService.GetAllMovies();
+            if (movies.Length == 0)
             {
                 Console.WriteLine("No hay películas registradas.");
                 return;
             }
 
-            foreach (var movie in data.Movies)
+            foreach (var movie in movies)
                 movie.ShowInfo();
         }
 
-        private void ListAllLocations(AppData data)
+        private void ListAllLocations(MovieService movieService)
         {
-            if (data.AllLocations.Count == 0)
-            {
-                Console.WriteLine("No hay locaciones registradas.");
-                return;
-            }
-
-            Console.WriteLine("\nLocaciones registradas:");
-            foreach (var loc in data.AllLocations)
-                Console.WriteLine($"- {loc.Name} ({loc.City}, {loc.Country})");
+            throw new Exception("Not implemented yet");
         }
     }
 }
