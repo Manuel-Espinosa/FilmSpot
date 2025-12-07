@@ -14,3 +14,16 @@ CREATE TABLE IF NOT EXISTS Movie (
     createdById INTEGER NOT NULL,
     FOREIGN KEY (createdById) REFERENCES User(id)
 );
+
+CREATE TABLE IF NOT EXISTS Location (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    description TEXT NOT NULL,
+    streetAddress TEXT NOT NULL,
+    city TEXT NOT NULL,
+    country TEXT NOT NULL,
+    createdById INTEGER NOT NULL,
+    movieId INTEGER NOT NULL,
+    FOREIGN KEY (movieId) REFERENCES Movie(id),
+    FOREIGN KEY (createdById) REFERENCES User(id)
+
+);

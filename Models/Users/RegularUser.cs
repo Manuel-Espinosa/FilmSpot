@@ -23,7 +23,6 @@ namespace FilmSpot.Models.Users
                 Console.WriteLine("1. Buscar película");
                 Console.WriteLine("2. Buscar peliculas por ciudad");
                 Console.WriteLine("3. Ver todas las películas");
-                Console.WriteLine("4. Ver todas las ubicaciones");
                 Console.WriteLine("0. Cerrar sesión");
                 Console.Write("Opción: ");
                 option = int.Parse(Console.ReadLine() ?? "0");
@@ -35,16 +34,14 @@ namespace FilmSpot.Models.Users
                         break;
 
                     case 2:
-                        SearchByLocation(movieService);
+                        SearchByCity(movieService);
                         break;
 
                     case 3:
                         ListAllMovies(movieService);
                         break;
 
-                    case 4:
-                        ListAllLocations(movieService);
-                        break;
+
                 }
 
             } while (option != 0);
@@ -65,18 +62,31 @@ namespace FilmSpot.Models.Users
             }
             foreach (var movie in movies)
             {
-                movie.ShowInfo();
+                movie.ShowInfo(true);
             }
         }
 
-        private void SearchByLocation(MovieService movieService)
+        private void SearchByCity(MovieService movieService)
         {
-            throw new Exception("Not implemented yet");
+            Console.Write("Ingrese el nombre de la ciudad: ");
+            string cityName = Console.ReadLine()!;
+
+            var movies = movieService.SearchMoviesByCity(cityName);
+
+            if (movies.Length == 0)
+            {
+                Console.WriteLine("No se encontró ninguna ubicación en esa ciudad.");
+                return;
+            }
+            foreach (var movie in movies)
+            {
+                movie.ShowInfo(false);
+            }
         }
 
         private void ListAllMovies(MovieService movieService)
         {
-            var movies = movieService.GetAllMovies();
+            var movies = movieService.GetAllMovies(true);
             if (movies.Length == 0)
             {
                 Console.WriteLine("No hay películas registradas.");
@@ -87,9 +97,5 @@ namespace FilmSpot.Models.Users
                 movie.ShowInfo();
         }
 
-        private void ListAllLocations(MovieService movieService)
-        {
-            throw new Exception("Not implemented yet");
-        }
     }
 }

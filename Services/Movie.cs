@@ -28,7 +28,7 @@ namespace FilmSpot.Services
                 return new Movie((int)id, movie.Title, movie.Year, movie.CreatedById);
             }
         }
-        public Movie[] GetAllMovies()
+        public Movie[] GetAllMovies(bool includeLocations = false)
         {
             List<Movie> movies = new List<Movie>();
             using (var command = connection.CreateCommand())
@@ -42,7 +42,17 @@ namespace FilmSpot.Services
                         string title = reader.GetString(1);
                         int year = reader.GetInt32(2);
                         int createdById = reader.GetInt32(3);
-                        movies.Add(new Movie(id, title, year, createdById));
+                        if (includeLocations)
+                        {
+                            LocationService locationService = new LocationService(connection);
+                            var locations = locationService.GetAllLocations(id);
+                            movies.Add(new Movie(id, title, year, createdById, locations.ToList()));
+                        }
+                        else
+                        {
+                            movies.Add(new Movie(id, title, year, createdById));
+                        }
+
                     }
                 }
             }
@@ -84,7 +94,39 @@ namespace FilmSpot.Services
                         string movieTitle = reader.GetString(1);
                         int year = reader.GetInt32(2);
                         int createdById = reader.GetInt32(3);
-                        movies.Add(new Movie(id, movieTitle, year, createdById));
+
+                        // Fetch locations for this movie
+                        LocationService locationService = new LocationService(connection);
+                        var locations = locationService.GetAllLocations(id);
+
+                        movies.Add(new Movie(id, movieTitle, year, createdById, locations.ToList()));
+                    }
+                }
+            }
+            return movies.ToArray();
+        }
+
+        public Movie[] SearchMoviesByCity(string cityName)
+        {
+            List<Movie> movies = new List<Movie>();
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = @"
+                SELECT DISTINCT m.id, m.title, m.year, m.createdById
+                FROM Movie m
+                JOIN Location l ON m.id = l.movieId
+                WHERE l.city LIKE @City;";
+                command.Parameters.AddWithValue("@City", $"%{cityName}%");
+
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        int id = reader.GetInt32(0);
+                        string title = reader.GetString(1);
+                        int year = reader.GetInt32(2);
+                        int createdById = reader.GetInt32(3);
+                        movies.Add(new Movie(id, title, year, createdById));
                     }
                 }
             }

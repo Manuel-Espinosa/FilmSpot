@@ -13,12 +13,12 @@ namespace FilmSpot.Models
         public int Year { get; private set; }
         public List<Location> Locations { get; private set; }
 
-        public Movie(int? id, string title, int year, int createdById = 0)
+        public Movie(int? id, string title, int year, int createdById = 0, List<Location> locations = null)
         {
             Id = id;
             Title = title;
             Year = year;
-            Locations = new List<Location>();
+            Locations = locations ?? new List<Location>();
             CreatedById = createdById;
         }
 
@@ -29,12 +29,12 @@ namespace FilmSpot.Models
             Console.WriteLine($"\n{Id}. {Title} ({Year})");
             if (!showLocations) return;
             if (Locations.Count == 0)
-                Console.WriteLine("  - No hay locaciones registradas.");
+                Console.WriteLine("  - No hay ubicaciones registradas.");
             else
             {
-                Console.WriteLine("  Locaciones:");
+                Console.WriteLine("  Ubicaciones:");
                 foreach (var loc in Locations)
-                    Console.WriteLine($"   - {loc.Name} ({loc.City}, {loc.Country})");
+                    loc.ShowInfo();
             }
         }
     }

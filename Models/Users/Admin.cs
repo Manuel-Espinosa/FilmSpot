@@ -57,6 +57,8 @@ namespace FilmSpot.Models.Users
                 Console.WriteLine("2. Ver todas las películas");
                 Console.WriteLine("3. Eliminar película");
                 Console.WriteLine("4. Actualizar película");
+                Console.WriteLine("5. Administrar ubicaciones");
+
                 Console.WriteLine("0. Cerrar sesión");
                 Console.Write("Opción: ");
 
@@ -87,7 +89,7 @@ namespace FilmSpot.Models.Users
                                 Console.WriteLine("No hay películas registradas.");
                             else
                                 foreach (var movie in movies)
-                                    movie.ShowInfo();
+                                    movie.ShowInfo(false);
                             break;
                         }
                     case 3:
@@ -120,6 +122,17 @@ namespace FilmSpot.Models.Users
                             break;
                         }
 
+                    case 5:
+                        {
+                            Movie? movie = pickMovie(movieService);
+                            if (movie != null)
+                            {
+                                ManageLocations(connection, movie);
+                            }
+                            break;
+
+                        }
+
                     case 0:
                         Console.WriteLine("Cerrando sesión...");
                         break;
@@ -128,6 +141,134 @@ namespace FilmSpot.Models.Users
                         Console.WriteLine("Opción no válida. Intente de nuevo.");
                         break;
                 }
+            } while (option != 0);
+        }
+
+        private Location? pickLocation(LocationService locationService, int movieId)
+        {
+            Location[] locations = locationService.GetAllLocations(movieId);
+            if (locations.Length == 0)
+            {
+                Console.WriteLine("No hay ubicaciones disponibles para esta película.");
+                return null;
+            }
+
+            Console.WriteLine("Selecciona una ubicación:");
+            foreach (var location in locations)
+                location.ShowInfo();
+
+            var id = Console.ReadLine();
+
+
+            if (!int.TryParse(id, out int locationId) || !locations.Any(l => l.Id == locationId))
+            {
+                Console.WriteLine("Opción inválida.");
+                return pickLocation(locationService, movieId);
+            }
+
+            Location result = locations.First(l => l.Id == locationId);
+
+            Console.WriteLine($"Seleccionaste la ubicación con ID {result.Id}.");
+            result.ShowInfo();
+            return result;
+        }
+
+        private void ManageLocations(SqliteConnection connection, Movie movie)
+        {
+            int option;
+            do
+            {
+
+                Console.WriteLine($"\n=== Administrar Ubicaciones para '{movie.Title}' ===");
+                Console.WriteLine("1. Agregar ubicación");
+                Console.WriteLine("2. Ver ubicaciones");
+                Console.WriteLine("3. Eliminar ubicación");
+                Console.WriteLine("4. Actualizar ubicación");
+                Console.WriteLine("0. Volver al menú anterior");
+                Console.Write("Opción: ");
+
+                if (!int.TryParse(Console.ReadLine(), out option))
+                    option = -1;
+
+                LocationService locationService = new LocationService(connection);
+
+                switch (option)
+                {
+                    case 1:
+                        {
+                            Console.Write("Descripción: ");
+                            string description = Console.ReadLine()?.Trim() ?? "";
+                            Console.Write("Dirección: ");
+                            string streetAddress = Console.ReadLine()?.Trim() ?? "";
+                            Console.Write("Ciudad: ");
+                            string city = Console.ReadLine()?.Trim() ?? "";
+                            Console.Write("País: ");
+                            string country = Console.ReadLine()?.Trim() ?? "";
+
+                            var newLocation = locationService.AddLocation(new Location(description, streetAddress, city, country, this.Id.Value, movie.Id.Value));
+                            Console.WriteLine($"Ubicación '{newLocation.Description}' agregada correctamente.");
+                            break;
+                        }
+                    case 2:
+                        {
+                            Location[] locations = locationService.GetAllLocations(movie.Id.Value);
+                            if (locations.Length == 0)
+                                Console.WriteLine("No hay ubicaciones registradas para esta película.");
+                            else
+                                foreach (var location in locations)
+                                    location.ShowInfo();
+                            break;
+                        }
+                    case 3:
+                        {
+                            Location? location = pickLocation(locationService, movie.Id.Value);
+                            if (location != null)
+                            {
+                                locationService.DeleteLocation(location.Id.Value);
+                                Console.WriteLine($"Ubicación con ID {location.Id} eliminada correctamente.");
+                            }
+                            break;
+                        }
+                    case 4:
+                        {
+                            Location? location = pickLocation(locationService, movie.Id.Value);
+                            if (location != null)
+                            {
+
+                                Console.Write("Nueva descripción (o presiona Enter para mantener): ");
+                                string inputDescription = Console.ReadLine()?.Trim();
+                                string newDescription = string.IsNullOrEmpty(inputDescription) ? location.Description : inputDescription;
+
+                                Console.Write("Nueva dirección (o presiona Enter para mantener): ");
+                                string inputStreetAddress = Console.ReadLine()?.Trim();
+                                string newStreetAddress = string.IsNullOrEmpty(inputStreetAddress) ? location.StreetAddress : inputStreetAddress;
+
+                                Console.Write("Nueva ciudad (o presiona Enter para mantener): ");
+                                string inputCity = Console.ReadLine()?.Trim();
+                                string newCity = string.IsNullOrEmpty(inputCity) ? location.City : inputCity;
+
+                                Console.Write("Nuevo país (o presiona Enter para mantener): ");
+                                string inputCountry = Console.ReadLine()?.Trim();
+                                string newCountry = string.IsNullOrEmpty(inputCountry) ? location.Country : inputCountry;
+                                Location updatedLocation = new Location(newDescription, newStreetAddress, newCity, newCountry, location.CreatedById, location.MovieId, location.Id);
+                                locationService.UpdateLocation(updatedLocation);
+                                Console.WriteLine($"Ubicación con ID {updatedLocation.Id} actualizada correctamente.");
+                            }
+                            break;
+                        }
+                    case 0:
+                        {
+                            Console.WriteLine("Volviendo al menú anterior...");
+                            break;
+                        }
+
+                    default:
+                        {
+                            Console.WriteLine("Opción no válida. Intente de nuevo.");
+                            break;
+                        }
+                }
+
             } while (option != 0);
         }
     }

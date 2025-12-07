@@ -15,7 +15,6 @@ namespace FilmSpot
             SqliteConnection connection = db.GetConnection();
             UserService userService = new UserService(connection);
             db.Initialize();
-            AppData data = new AppData();
             bool exit = false;
 
             while (!exit)
