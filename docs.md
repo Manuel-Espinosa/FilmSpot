@@ -1,6 +1,7 @@
 # Documentación Técnica - FilmSpot
 
 ## Tabla de Contenidos
+
 1. [Introducción](#introducción)
 2. [Arquitectura General](#arquitectura-general)
 3. [Componentes Principales](#componentes-principales)
@@ -16,6 +17,7 @@
 **FilmSpot** es una aplicación de consola desarrollada en C# que permite gestionar películas y sus locaciones de filmación. El sistema implementa un modelo de usuarios con dos tipos de roles: Administradores y Usuarios Regulares, cada uno con diferentes permisos y funcionalidades.
 
 ### Tecnologías
+
 - **Lenguaje**: C#
 - **Tipo de aplicación**: Aplicación de consola
 - **Paradigma**: Programación Orientada a Objetos (OOP)
@@ -29,7 +31,6 @@ El proyecto sigue una arquitectura por capas con separación de responsabilidade
 ```
 FilmSpot/
 ├── Program.cs             # Punto de entrada de la aplicación
-├── AppData.cs             # Gestión centralizada de datos
 └── Models/                # Modelos de dominio
     ├── Movie.cs           # Entidad Película
     ├── Location.cs        # Entidad Locación
@@ -74,7 +75,6 @@ namespace FilmSpot
 
 #### Funcionalidades
 
-- **Inicialización**: Crea una instancia de `AppData` para gestionar los datos de la aplicación
 - **Menú Principal**: Presenta opciones para ingresar como:
   - Administrador (opción 1)
   - Usuario Regular (opción 2)
@@ -105,7 +105,7 @@ namespace FilmSpot
 #### Propiedades
 
 | Propiedad | Tipo     | Acceso  | Descripción               |
-|-----------|----------|---------|---------------------------|
+| --------- | -------- | ------- | ------------------------- |
 | `Name`    | `string` | Lectura | Nombre de la locación     |
 | `City`    | `string` | Lectura | Ciudad donde se encuentra |
 | `Country` | `string` | Lectura | País de la locación       |
@@ -121,9 +121,11 @@ Inicializa una nueva locación con los datos proporcionados.
 #### Métodos
 
 ##### ShowInfo()
+
 ```csharp
 public void ShowInfo()
 ```
+
 - **Propósito**: Muestra la información de la locación en consola
 - **Formato**: `{Name} - {City}, {Country}`
 - **Referencia**: `Location.cs:18-21`
@@ -139,7 +141,7 @@ public void ShowInfo()
 #### Propiedades
 
 | Propiedad   | Tipo             | Acceso  | Descripción                      |
-|-------------|------------------|---------|----------------------------------|
+| ----------- | ---------------- | ------- | -------------------------------- |
 | `Title`     | `string`         | Lectura | Título de la película            |
 | `Year`      | `int`            | Lectura | Año de lanzamiento               |
 | `Locations` | `List<Location>` | Lectura | Lista de locaciones de filmación |
@@ -155,9 +157,11 @@ Inicializa una película con título, año y una lista vacía de locaciones.
 #### Métodos
 
 ##### AddLocation(Location location)
+
 ```csharp
 public void AddLocation(Location location)
 ```
+
 - **Propósito**: Agrega una locación a la película
 - **Validación**: Verifica que la locación no esté duplicada (comparación case-insensitive)
 - **Comportamiento**:
@@ -166,9 +170,11 @@ public void AddLocation(Location location)
 - **Referencia**: `Movie.cs:20-34`
 
 ##### ShowInfo()
+
 ```csharp
 public void ShowInfo()
 ```
+
 - **Propósito**: Muestra información completa de la película
 - **Formato**:
   ```
@@ -191,7 +197,7 @@ public void ShowInfo()
 #### Propiedades
 
 | Propiedad | Tipo     | Acceso                      | Descripción                           |
-|-----------|----------|-----------------------------|---------------------------------------|
+| --------- | -------- | --------------------------- | ------------------------------------- |
 | `Name`    | `string` | Lectura                     | Nombre del usuario                    |
 | `IsAdmin` | `bool`   | Lectura/Escritura protegido | Indica si el usuario es administrador |
 
@@ -205,12 +211,14 @@ Constructor protegido que inicializa el nombre del usuario.
 
 #### Métodos Abstractos
 
-##### ShowMenu(AppData data)
+##### ShowMenu(SqliteConnection connection)
+
 ```csharp
-public abstract void ShowMenu(AppData data)
+public abstract void ShowMenu(SqliteConnection connection)
 ```
+
 - **Propósito**: Muestra el menú específico de cada tipo de usuario
-- **Parámetro**: `data` - Referencia a los datos compartidos de la aplicación
+- **Parámetro**: `connection` - Una conexión abierta de SQLite
 - **Implementación**: Debe ser implementado por las clases derivadas
 
 **Referencia**: `User.cs:5-16`
@@ -233,20 +241,23 @@ Establece `IsAdmin = true` automáticamente.
 
 #### Métodos
 
-##### ShowMenu(AppData data)
+##### ShowMenu(SqliteConnection connection)
+
 ```csharp
-public override void ShowMenu(AppData data)
+public override void ShowMenu(SqliteConnection connection)
 ```
 
 **Funcionalidades disponibles**:
 
 1. **Agregar película** (Opción 1)
+
    - Solicita título y año
    - Valida que el año sea un número válido
    - Agrega la película a la lista
    - **Referencia**: `Admin.cs:31-42`
 
 2. **Agregar locación a película** (Opción 2)
+
    - Muestra lista de películas existentes
    - Permite seleccionar una película
    - Ofrece dos opciones:
@@ -256,6 +267,7 @@ public override void ShowMenu(AppData data)
    - **Referencia**: `Admin.cs:44-101`
 
 3. **Ver todas las películas** (Opción 3)
+
    - Lista todas las películas con sus locaciones
    - **Referencia**: `Admin.cs:103-109`
 
@@ -289,29 +301,34 @@ Establece `IsAdmin = false` automáticamente.
 
 #### Métodos
 
-##### ShowMenu(AppData data)
+##### ShowMenu(SqliteConnection connection)
+
 ```csharp
-public override void ShowMenu(AppData data)
+public override void ShowMenu(SqliteConnection connection)
 ```
 
 **Funcionalidades disponibles**:
 
 1. **Buscar película** (Opción 1)
+
    - Búsqueda por título exacto (case-insensitive)
    - Muestra información completa si se encuentra
    - **Referencia**: `RegularUser.cs:50-72`
 
 2. **Buscar locación** (Opción 2)
+
    - Búsqueda por nombre o ciudad (búsqueda parcial)
    - Muestra las películas filmadas en cada locación encontrada
    - Usa LINQ para consultas complejas
    - **Referencia**: `RegularUser.cs:74-117`
 
 3. **Ver todas las películas** (Opción 3)
+
    - Lista completa de películas registradas
    - **Referencia**: `RegularUser.cs:119-129`
 
 4. **Ver todas las locaciones** (Opción 4)
+
    - Lista todas las locaciones del sistema
    - **Referencia**: `RegularUser.cs:131-142`
 
@@ -332,58 +349,7 @@ public override void ShowMenu(AppData data)
 
 ## Gestión de Datos
 
-### AppData
-
-**Ubicación**: `/AppData.cs`
-
-**Descripción**: Clase centralizada para la gestión de datos de la aplicación. Actúa como repositorio en memoria.
-
-#### Propiedades
-
-| Propiedad      | Tipo             | Acceso  | Descripción                          |
-|----------------|------------------|---------|--------------------------------------|
-| `Movies`       | `List<Movie>`    | Lectura | Colección de todas las películas     |
-| `AllLocations` | `List<Location>` | Lectura | Colección centralizada de locaciones |
-
-#### Constructor
-
-```csharp
-public AppData()
-```
-
-Inicializa las listas vacías de películas y locaciones.
-
-#### Métodos
-
-##### GetOrCreateLocation(string name, string city, string country)
-
-```csharp
-public Location GetOrCreateLocation(string name, string city, string country)
-```
-
-**Propósito**: Implementa el patrón Singleton para locaciones, evitando duplicados.
-
-**Algoritmo**:
-1. Busca una locación existente con los mismos datos (comparación case-insensitive)
-2. Si existe: Retorna la instancia existente
-3. Si no existe:
-   - Crea una nueva locación
-   - La agrega a `AllLocations`
-   - Retorna la nueva instancia
-
-**Beneficios**:
-- Evita duplicación de locaciones en memoria
-- Permite reutilización de instancias
-- Garantiza consistencia de datos
-- Facilita la búsqueda de películas por locación
-
-**Comparación**:
-- Utiliza `StringComparison.OrdinalIgnoreCase` para comparaciones case-insensitive
-- Compara: Nombre, Ciudad y País
-
-**Referencia**: `AppData.cs:18-31`
-
----
+TODO
 
 ## Flujo de Ejecución
 
@@ -391,7 +357,7 @@ public Location GetOrCreateLocation(string name, string city, string country)
 
 ```mermaid
 flowchart TD
-    start["Program.Main()"] --> app["Crear instancia de AppData"]
+    start["Program.Main()"] --> app["Crear conexión a SQLite"]
     app --> menu["Mostrar menú principal"]
     menu --> opc["Capturar opción del usuario"]
 ```
@@ -441,11 +407,6 @@ classDiagram
     title Diagrama de Clases - FilmSpot
 
     %% ====== CLASES PRINCIPALES ======
-    class AppData {
-        - List~Movie~ Movies
-        - List~Location~ AllLocations
-        + GetOrCreateLocation(name, city, country) Location
-    }
 
     class Movie {
         - string Title
@@ -467,15 +428,15 @@ classDiagram
         <<abstract>>
         - string Name
         - bool IsAdmin
-        + ShowMenu(data AppData)
+        + ShowMenu(SQLiteConnection connection)
     }
 
     class Admin {
-        + ShowMenu(data AppData)
+        + ShowMenu(SQLiteConnection connection)
     }
 
     class RegularUser {
-        + ShowMenu(data AppData)
+        + ShowMenu(SQLiteConnection connection)
     }
 
     %% ====== RELACIONES ======
@@ -488,6 +449,8 @@ classDiagram
 ```
 
 ### Relaciones
+
+<!-- TODO: Replace AppData -->
 
 - **Herencia**: `Admin` y `RegularUser` heredan de `User`
 - **Composición**: `Movie` contiene una lista de `Location`
@@ -502,7 +465,10 @@ classDiagram
 
 El sistema implementa múltiples estrategias para evitar duplicados:
 
+<!-- TODO: Replace AppData -->
+
 #### En Location (AppData.cs:18-31)
+
 ```csharp
 var existing = AllLocations.FirstOrDefault(l =>
     l.Name.Equals(name, StringComparison.OrdinalIgnoreCase) &&
@@ -511,6 +477,7 @@ var existing = AllLocations.FirstOrDefault(l =>
 ```
 
 #### En Movie (Movie.cs:22-28)
+
 ```csharp
 bool exists = Locations.Any(l =>
     l.Name.Equals(location.Name, StringComparison.OrdinalIgnoreCase) &&
@@ -531,6 +498,7 @@ Todas las búsquedas utilizan `StringComparison.OrdinalIgnoreCase` para mejorar 
 ### 4. Encapsulamiento
 
 Propiedades con setters privados protegen la integridad de los datos:
+
 ```csharp
 public string Name { get; private set; }
 ```
@@ -538,6 +506,7 @@ public string Name { get; private set; }
 ### 5. LINQ
 
 Uso extensivo de LINQ para consultas expresivas y legibles:
+
 - `FirstOrDefault()`
 - `Where()`
 - `Any()`
@@ -567,12 +536,14 @@ Uso extensivo de LINQ para consultas expresivas y legibles:
 ## Convenciones de Código
 
 ### Naming Conventions
-- **Clases**: PascalCase (`Movie`, `Location`, `AppData`)
+
+- **Clases**: PascalCase (`Movie`, `Location`)
 - **Métodos**: PascalCase (`ShowMenu`, `AddLocation`)
 - **Propiedades**: PascalCase (`Title`, `Name`, `IsAdmin`)
 - **Variables locales**: camelCase (`title`, `userName`, `option`)
 
 ### Organización de Archivos
+
 - Uso de namespaces para organización lógica
 - Separación de modelos en carpeta dedicada
 - Jerarquía de carpetas refleja jerarquía de clases

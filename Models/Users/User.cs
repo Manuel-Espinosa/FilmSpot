@@ -1,3 +1,5 @@
+using Microsoft.Data.Sqlite;
+
 using System;
 
 namespace FilmSpot.Models.Users
@@ -14,6 +16,6 @@ namespace FilmSpot.Models.Users
             Name = name;
         }
 
-        public abstract void ShowMenu(AppData data);
+        public abstract void ShowMenu(SqliteConnection connection);
     }
 }

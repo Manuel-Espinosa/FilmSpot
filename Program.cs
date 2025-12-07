@@ -15,7 +15,6 @@ namespace FilmSpot
             SqliteConnection connection = db.GetConnection();
             UserService userService = new UserService(connection);
             db.Initialize();
-            AppData data = new AppData();
             bool exit = false;
 
             while (!exit)
@@ -48,7 +47,7 @@ namespace FilmSpot
                                 Console.WriteLine(exception.Message);
                                 continue;
                             }
-                            user.ShowMenu(data);
+                            user.ShowMenu(connection);
                             Console.Clear();
                             break;
                         }
