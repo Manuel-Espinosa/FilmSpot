@@ -402,60 +402,216 @@ flowchart TD
 
 ## Diagrama de Clases
 
-```mermaid
-classDiagram
-    title Diagrama de Clases - FilmSpot
+```plantuml
+@startuml
+title Diagrama de Clases - FilmSpot
 
-    %% ====== CLASES PRINCIPALES ======
+' ====== MODELOS ======
 
-    class Movie {
-        - string Title
-        - int Year
-        - List~Location~ Locations
-        + AddLocation(location Location)
-        + ShowInfo()
-    }
+class Movie {
+    - int? Id
+    - string Title
+    - int Year
+    - int CreatedById
+    - List<Location> Locations
+    + Movie(id, title, year, createdById, locations)
+    + ShowInfo(showLocations: bool)
+}
 
-    class Location {
-        - string Name
-        - string City
-        - string Country
-        + ShowInfo()
-    }
+class Location {
+    - int? Id
+    - string Description
+    - string StreetAddress
+    - string City
+    - string Country
+    - int CreatedById
+    + Location(description, streetAddress, city, country, createdById, id)
+    + ShowInfo()
+}
 
-    %% ====== CLASES DE USUARIO ======
-    class User {
-        <<abstract>>
-        - string Name
-        - bool IsAdmin
-        + ShowMenu(SQLiteConnection connection)
-    }
+' ====== USUARIOS ======
 
-    class Admin {
-        + ShowMenu(SQLiteConnection connection)
-    }
+abstract class User {
+    - int? Id
+    - string Name
+    # bool IsAdmin
+    + User(id, name)
+    + {abstract} ShowMenu(connection: SqliteConnection)
+}
 
-    class RegularUser {
-        + ShowMenu(SQLiteConnection connection)
-    }
+class Admin {
+    + Admin(id, name)
+    + ShowMenu(connection: SqliteConnection)
+    - pickMovie(movieService: MovieService): Movie?
+    - pickLocation(locationService: LocationService, movieId: int): Location?
+    - ManageLocations(connection: SqliteConnection, movie: Movie)
+}
 
-    %% ====== RELACIONES ======
-    AppData "1" --> "*" Movie : contiene >
-    AppData "1" --> "*" Location : contiene >
-    Movie "1" --> "*" Location : usa >
-    User <|-- Admin
-    User <|-- RegularUser
+class RegularUser {
+    + RegularUser(id, name)
+    + ShowMenu(connection: SqliteConnection)
+    - SearchMovie(movieService: MovieService)
+    - SearchByCity(movieService: MovieService)
+    - ListAllMovies(movieService: MovieService)
+}
 
+' ====== SERVICIOS ======
+
+class MovieService {
+    - SqliteConnection connection
+    + MovieService(connection)
+    + AddMovie(movie: Movie): Movie
+    + GetAllMovies(includeLocations: bool): Movie[]
+    + DeleteMovie(movieId: int)
+    + UpdateMovie(movie: Movie)
+    + SearchByTitle(title: string): Movie[]
+    + SearchMoviesByCity(cityName: string): Movie[]
+}
+
+class LocationService {
+    - SqliteConnection connection
+    + LocationService(connection)
+    + AddLocation(location: Location): Location
+    + GetAllLocations(movieId: int?): Location[]
+    + DeleteLocation(locationId: int)
+    + UpdateLocation(location: Location)
+    + SearchByCity(cityName: string): Location[]
+}
+
+class UserService {
+    - SqliteConnection connection
+    + UserService(connection)
+    + RegisterUser(user: User, password: string): User
+    + FindUserByUsername(username: string): User
+    + VerifyUserPassword(user: User, password: string): bool
+}
+
+class PasswordHelper <<static>> {
+    + {static} HashPassword(password: string): string
+    + {static} VerifyPassword(password: string, stored: string): bool
+}
+
+' ====== DATA LAYER ======
+
+class Db {
+    - string _dataSource
+    + Db(databaseFile: string)
+    + GetConnection(): SqliteConnection
+    + Initialize()
+}
+
+class Program <<entrypoint>> {
+    + {static} Main()
+}
+
+' ====== TABLAS DE BASE DE DATOS ======
+
+entity MovieLocation <<table>> {
+    + id: INTEGER (PK)
+    + movieId: INTEGER (FK)
+    + locationId: INTEGER (FK)
+    + addedAt: DATETIME
+    --
+    UNIQUE(movieId, locationId)
+}
+
+' ====== EXCEPCIONES ======
+
+class UserNotFoundException {
+    + UserNotFoundException(message: string)
+}
+
+class UnauthorizedAccessException {
+    + UnauthorizedAccessException(message: string)
+}
+
+' ====== RELACIONES ======
+
+' Herencia
+User <|-- Admin
+User <|-- RegularUser
+Exception <|-- UserNotFoundException
+Exception <|-- UnauthorizedAccessException
+
+' Composición (en memoria)
+Movie "1" *-- "*" Location : contiene >
+
+' Dependencias (Usuarios → Servicios)
+Admin ..> MovieService : usa
+Admin ..> LocationService : usa
+RegularUser ..> MovieService : usa
+
+' Dependencias (Servicios → Modelos)
+MovieService ..> Movie : gestiona
+LocationService ..> Location : gestiona
+UserService ..> User : gestiona
+UserService ..> Admin : crea
+UserService ..> RegularUser : crea
+
+' Dependencia de PasswordHelper
+UserService ..> PasswordHelper : usa
+
+' Program usa todo
+Program ..> Db : inicializa
+Program ..> UserService : usa
+Program ..> User : crea instancias
+
+' Servicios usan conexión
+Db ..> MovieService : provee conexión
+Db ..> LocationService : provee conexión
+Db ..> UserService : provee conexión
+
+' Relaciones de FK (Base de datos)
+User "1" -- "*" Movie : createdById >
+User "1" -- "*" Location : createdById >
+Movie "1" -- "*" MovieLocation : movieId >
+Location "1" -- "*" MovieLocation : locationId >
+
+note right of PasswordHelper
+  Utiliza PBKDF2 con SHA256
+  100,000 iteraciones
+  Salt de 16 bytes
+end note
+
+note bottom of Db
+  SQLite Database: filmSpot.db
+  Ejecuta setup.sql en primera ejecución
+end note
+
+note right of MovieLocation
+  Tabla de unión (junction table)
+  Implementa relación N:N entre
+  Movie y Location
+
+  CASCADE DELETE en ambas FKs
+end note
+
+@enduml
 ```
 
 ### Relaciones
 
-<!-- TODO: Replace AppData -->
+- **Herencia**:
+  - `Admin` y `RegularUser` heredan de `User`
+  - `UserNotFoundException` y `UnauthorizedAccessException` heredan de `Exception`
 
-- **Herencia**: `Admin` y `RegularUser` heredan de `User`
-- **Composición**: `Movie` contiene una lista de `Location`
-- **Agregación**: `AppData` mantiene referencias a `Movie` y `Location`
-- **Dependencia**: Todas las clases de usuario dependen de `AppData`
+- **Composición**:
+  - `Movie` contiene una lista de `Location` (relación fuerte)
+
+- **Dependencias**:
+  - Los usuarios (Admin/RegularUser) usan los servicios (MovieService, LocationService)
+  - Los servicios gestionan los modelos (Movie, Location, User)
+  - `Program` orquesta toda la aplicación
+  - `Db` provee conexiones a todos los servicios
+
+- **Asociaciones (Base de Datos)**:
+  - User → Movie (1:N via createdById)
+  - User → Location (1:N via createdById)
+  - Movie → Location (1:N via movieId)
+
+- **Clases de Utilidad**:
+  - `PasswordHelper`: Clase estática para hash y verificación de contraseñas
+  - `Db`: Gestiona la conexión y configuración de SQLite
 
 ---
 
