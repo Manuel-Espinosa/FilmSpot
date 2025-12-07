@@ -1,6 +1,7 @@
 ﻿using System;
 using FilmSpot.Models;
 using FilmSpot.Models.Users;
+using FilmSpot.Data;
 
 namespace FilmSpot
 {
@@ -8,6 +9,8 @@ namespace FilmSpot
     {
         public static void Main()
         {
+            Db db = new Db();
+            db.Initialize();
             AppData data = new AppData();
             bool exit = false;
 
